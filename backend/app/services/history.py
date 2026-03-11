@@ -1,13 +1,13 @@
 import json
 import os
-from typing import List, Dict
+from typing import List, Dict, Optional
 from datetime import datetime
 from langchain_core.messages import HumanMessage, AIMessage
 from app.config import settings
 
 
 class ChatHistoryManager:
-    def __init__(self, history_file: str = None):
+    def __init__(self, history_file: Optional[str] = None):
         self.history_file = history_file or settings.history_file
         self.history: List[Dict] = self._load()
     
@@ -63,14 +63,19 @@ class ChatHistoryManager:
                 messages.append(AIMessage(content=msg["content"]))
         return messages
     
-    def get_history_text(self) -> str:
+    def get_history_text(self, max_chars: int = 2000) -> str:
         if not self.history:
             return "无历史对话"
-        return "\n".join([
+        
+        history_text = "\n".join([
             f"用户: {m['content']}" if m["role"] == "user" 
             else f"助手: {m['content']}"
             for m in self.history
         ])
+        
+        if len(history_text) > max_chars:
+            return history_text[-max_chars:]
+        return history_text
 
 
 history_manager = ChatHistoryManager()

@@ -8,14 +8,7 @@
     <main class="app-main">
       <div class="sidebar">
         <FileUpload @uploaded="onDocumentUploaded" />
-        <div class="doc-info">
-          <el-card>
-            <template #header>
-              <span>文档信息</span>
-            </template>
-            <p>文档数量: {{ docCount }}</p>
-          </el-card>
-        </div>
+        <DocumentList ref="docListRef" @deleted="onDocumentDeleted" />
       </div>
       
       <div class="chat-area">
@@ -28,26 +21,20 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import FileUpload from './components/FileUpload.vue'
+import DocumentList from './components/DocumentList.vue'
 import ChatWindow from './components/ChatWindow.vue'
 import axios from 'axios'
 
-const docCount = ref(0)
-
-const fetchDocCount = async () => {
-  try {
-    const res = await axios.get('/api/documents')
-    docCount.value = res.data.document_count || 0
-  } catch (e) {
-    console.error(e)
-  }
-}
+const docListRef = ref(null)
 
 const onDocumentUploaded = () => {
-  fetchDocCount()
+  docListRef.value?.fetchDocuments()
+}
+
+const onDocumentDeleted = () => {
 }
 
 onMounted(() => {
-  fetchDocCount()
 })
 </script>
 
@@ -109,10 +96,5 @@ body {
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-}
-
-.doc-info p {
-  font-size: 14px;
-  color: #666;
 }
 </style>

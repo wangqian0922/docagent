@@ -19,11 +19,12 @@ async def upload_document(file: UploadFile = File(...)):
         tmp_path = tmp.name
     
     try:
-        chunks = rag_service.add_documents(tmp_path)
+        result = rag_service.add_documents(tmp_path)
         return UploadResponse(
             success=True,
             message=f"文档 {file.filename} 上传成功",
-            chunks=chunks
+            chunks=result["chunks"],
+            file_id=result["file_id"]
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"处理文档失败: {str(e)}")
@@ -34,7 +35,14 @@ async def upload_document(file: UploadFile = File(...)):
 
 @router.get("/documents")
 async def list_documents():
-    count = 0
-    if rag_service.vectorstore is not None:
-        count = rag_service.vectorstore._collection.count()
-    return {"document_count": count}
+    documents = rag_service.list_documents()
+    total_chunks = sum(doc.get("chunks", 0) for doc in documents)
+    return {"documents": documents, "total_chunks": total_chunks}
+
+
+@router.delete("/documents/{file_id}")
+async def delete_document(file_id: str):
+    success = rag_service.delete_document(file_id)
+    if success:
+        return {"message": "删除成功", "success": True}
+    raise HTTPException(status_code=404, detail="文件不存在")

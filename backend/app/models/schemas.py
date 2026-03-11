@@ -16,3 +16,4 @@ class UploadResponse(BaseModel):
     success: bool
     message: str
     chunks: int = 0
+    file_id: Optional[str] = None

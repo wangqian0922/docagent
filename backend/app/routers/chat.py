@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain.agents import AgentExecutor, create_react_agent
+from langchain_core.messages import HumanMessage, AIMessage
 import json
 import asyncio
 
@@ -30,9 +31,9 @@ async def generate_response(message: str, use_history: bool = True):
         )
         
         if use_history:
-            history_text = history_manager.get_history_text()
+            history_messages = history_manager.to_langchain_messages()
         else:
-            history_text = "无历史对话"
+            history_messages = []
         
         prompt = PromptTemplate.from_template(AGENT_PROMPT)
         
@@ -50,8 +51,16 @@ async def generate_response(message: str, use_history: bool = True):
         
         full_response = ""
         
+        if use_history and history_messages:
+            input_with_history = f"""Previous conversation:
+{history_manager.get_history_text()}
+
+Current question: {message}"""
+        else:
+            input_with_history = message
+        
         async for event in agent_executor.astream_events(
-            {"input": message, "chat_history": history_text},
+            {"input": input_with_history},
             version="v1"
         ):
             if event["event"] == "on_chat_model_stream":

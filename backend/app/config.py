@@ -11,7 +11,6 @@ class Settings(BaseSettings):
     
     chunk_size: int = 500
     chunk_overlap: int = 50
-    
     max_iterations: int = 5
     
     history_file: str = "./chat_history.json"

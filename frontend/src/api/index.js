@@ -12,11 +12,11 @@ export const uploadDocument = (formData, onUploadProgress) => {
   })
 }
 
-export const chatStream = async (message, onMessage, onError) => {
+export const chatStream = async (message, useHistory = true, onMessage, onError) => {
   const response = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, use_history: useHistory }),
   })
 
   if (!response.ok) {
@@ -59,5 +59,7 @@ export const clearHistory = () => api.post('/history/clear')
 export const undoHistory = () => api.post('/history/undo')
 
 export const getDocuments = () => api.get('/documents')
+
+export const deleteDocument = (fileId) => api.delete(`/documents/${fileId}`)
 
 export default api

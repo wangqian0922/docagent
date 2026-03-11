@@ -83,6 +83,7 @@ const sendMessage = async () => {
   try {
     await chatStream(
       userMessage,
+      true,
       (content) => {
         messages.value[messages.value.length - 1].content += content
         scrollToBottom()

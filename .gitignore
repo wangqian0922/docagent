@@ -16,6 +16,10 @@ build/
 # Database
 chroma_db/
 chat_history.json
+file_registry.json
+
+# Temp files
+nul
 
 # Frontend
 node_modules/
