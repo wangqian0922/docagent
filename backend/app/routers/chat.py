@@ -3,8 +3,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
-from langchain.agents import AgentExecutor, create_react_agent
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain.agents import create_agent
 import json
 import asyncio
 
@@ -38,13 +37,10 @@ async def generate_response(message: str, use_history: bool = True):
         prompt = PromptTemplate.from_template(AGENT_PROMPT)
         
         tools = get_tools()
-        agent = create_react_agent(llm, tools, prompt)
-        agent_executor = AgentExecutor(
-            agent=agent,
-            tools=tools,
-            max_iterations=settings.max_iterations,
-            verbose=True,
-            handle_parsing_errors=True
+        agent_executor = create_agent(
+            llm,
+            tools,
+            system_prompt=AGENT_PROMPT
         )
         
         history_manager.add_user_message(message)

@@ -46,7 +46,6 @@ def document_retriever(query: str) -> str:
     context = "\n\n".join([f"[来源{i+1}] {doc.page_content}" for i, doc in enumerate(docs)])
     return f"参考文档内容:\n{context}"
 
-
 def get_tools():
     return [calculator, get_current_time, document_retriever]
 

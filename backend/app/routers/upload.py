@@ -6,7 +6,6 @@ import tempfile
 
 router = APIRouter()
 
-
 @router.post("/upload", response_model=UploadResponse)
 async def upload_document(file: UploadFile = File(...)):
     if not file.filename.endswith(('.pdf', '.txt')):
