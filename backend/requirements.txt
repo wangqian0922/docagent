@@ -17,3 +17,9 @@ pypdf==5.2.0
 numexpr==2.8.7
 sse-starlette==1.8.2
 numpy==1.26.4
+redis>=5.0.0
+celery>=5.3.0
+rank-bm25>=0.2.2
+python-docx>=1.1.0
+httpx>=0.26.0
+scikit-learn>=1.4.0

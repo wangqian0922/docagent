@@ -53,8 +53,15 @@ import { ElMessage } from 'element-plus'
 import { Promotion } from '@element-plus/icons-vue'
 import { chatStream, undoHistory } from '../api'
 
+const props = defineProps({
+  knowledgeBaseId: {
+    type: String,
+    default: 'default'
+  }
+})
+
 const messages = ref([
-  { role: 'assistant', content: '你好！我是 DocAgent。请先在左侧上传文档，然后我可以帮你回答关于文档的问题。我还可以帮你计算数学题和查询时间。' }
+  { role: 'assistant', content: '你好！我是 DocAgent v2.0。请先在左侧上传文档，然后我可以帮你回答关于文档的问题。我还可以帮你计算数学题、查询时间和搜索网络信息。' }
 ])
 const inputMessage = ref('')
 const isLoading = ref(false)

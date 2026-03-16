@@ -37,3 +37,14 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Models cache
+backend/app/models/models--*/
+
+# Knowledge bases
+knowledge_bases/
+backend/knowledge_bases/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid

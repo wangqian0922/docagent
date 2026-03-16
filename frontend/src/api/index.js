@@ -5,11 +5,15 @@ const api = axios.create({
   timeout: 120000,
 })
 
-export const uploadDocument = (formData, onUploadProgress) => {
-  return api.post('/upload', formData, {
+export const uploadDocument = (formData, onUploadProgress, knowledgeBaseId = 'default') => {
+  return api.post(`/upload?knowledge_base_id=${knowledgeBaseId}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress,
   })
+}
+
+export const getTaskStatus = (taskId) => {
+  return api.get(`/task/${taskId}`)
 }
 
 export const chatStream = async (message, useHistory = true, onMessage, onError) => {
@@ -58,8 +62,19 @@ export const clearHistory = () => api.post('/history/clear')
 
 export const undoHistory = () => api.post('/history/undo')
 
-export const getDocuments = () => api.get('/documents')
+export const getDocuments = (knowledgeBaseId = 'default') => 
+  api.get(`/documents?knowledge_base_id=${knowledgeBaseId}`)
 
-export const deleteDocument = (fileId) => api.delete(`/documents/${fileId}`)
+export const deleteDocument = (fileId, knowledgeBaseId = 'default') => 
+  api.delete(`/documents/${fileId}?knowledge_base_id=${knowledgeBaseId}`)
+
+export const getKnowledgeBases = () => api.get('/knowledge-bases')
+
+export const createKnowledgeBase = (name) => 
+  api.post(`/knowledge-bases?name=${encodeURIComponent(name)}`)
+
+export const getStats = () => api.get('/stats')
+
+export const getAgentLogs = (limit = 50) => api.get(`/agent-logs?limit=${limit}`)
 
 export default api

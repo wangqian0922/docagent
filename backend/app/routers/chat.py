@@ -49,14 +49,12 @@ async def generate_response(message: str, use_history: bool = True):
         
         if use_history and history_messages:
             input_with_history = f"""Previous conversation:
-{history_manager.get_history_text()}
-
-Current question: {message}"""
+            {history_manager.get_history_text()}Current question: {message}"""
         else:
             input_with_history = message
         
         async for event in agent_executor.astream_events(
-            {"input": input_with_history},
+            {"messages": [("user", input_with_history)]},
             version="v1"
         ):
             if event["event"] == "on_chat_model_stream":

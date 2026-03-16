@@ -13,7 +13,7 @@
       :on-success="handleSuccess"
       :on-error="handleError"
       :limit="1"
-      accept=".pdf,.txt"
+      accept=".pdf,.txt,.docx"
       drag
     >
       <el-icon class="el-icon--upload"><upload-filled /></el-icon>
@@ -22,7 +22,7 @@
       </div>
       <template #tip>
         <div class="el-upload__tip">
-          支持 PDF 和 TXT 文件
+          支持 PDF、TXT、DOCX 文件
         </div>
       </template>
     </el-upload>
@@ -38,14 +38,30 @@
       :percentage="progress"
       :status="progressStatus"
     />
+    
+    <div v-if="taskId" class="task-status">
+      <el-alert
+        :title="taskStatusText"
+        :type="taskStatusType"
+        :closable="false"
+        show-icon
+      />
+    </div>
   </el-card>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UploadFilled } from '@element-plus/icons-vue'
-import { uploadDocument } from '../api'
+import { uploadDocument, getTaskStatus } from '../api'
+
+const props = defineProps({
+  knowledgeBaseId: {
+    type: String,
+    default: 'default'
+  }
+})
 
 const emit = defineEmits(['uploaded'])
 
@@ -54,9 +70,56 @@ const uploading = ref(false)
 const progress = ref(0)
 const progressStatus = ref('')
 const currentFile = ref(null)
+const taskId = ref(null)
+const taskStatus = ref('')
+
+const taskStatusText = computed(() => {
+  if (taskStatus.value === 'success') return '文档处理完成'
+  if (taskStatus.value === 'failed') return '文档处理失败'
+  if (taskStatus.value === 'processing') return '正在处理文档...'
+  return '等待处理...'
+})
+
+const taskStatusType = computed(() => {
+  if (taskStatus.value === 'success') return 'success'
+  if (taskStatus.value === 'failed') return 'error'
+  return 'info'
+})
 
 const handleChange = (file) => {
   currentFile.value = file.raw
+  taskId.value = null
+  taskStatus.value = ''
+}
+
+const checkTaskStatus = async () => {
+  if (!taskId.value) return
+  
+  try {
+    const res = await getTaskStatus(taskId.value)
+    taskStatus.value = res.data.status
+    
+    if (res.data.status === 'success') {
+      progress.value = 100
+      progressStatus.value = 'success'
+      ElMessage.success('文档上传并处理完成')
+      emit('uploaded')
+      setTimeout(() => {
+        uploadRef.value?.clearFiles()
+        currentFile.value = null
+        taskId.value = null
+        taskStatus.value = ''
+      }, 2000)
+    } else if (res.data.status === 'failed') {
+      progressStatus.value = 'exception'
+      ElMessage.error(res.data.error || '处理失败')
+    } else if (res.data.status === 'processing') {
+      progress.value = res.data.meta?.progress || 50
+      setTimeout(checkTaskStatus, 2000)
+    }
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const submitUpload = async () => {
@@ -68,6 +131,7 @@ const submitUpload = async () => {
   uploading.value = true
   progress.value = 0
   progressStatus.value = ''
+  taskStatus.value = ''
   
   const formData = new FormData()
   formData.append('file', currentFile.value)
@@ -75,16 +139,15 @@ const submitUpload = async () => {
   try {
     const res = await uploadDocument(formData, (event) => {
       progress.value = Math.round((event.loaded / event.total) * 100)
-    })
+    }, props.knowledgeBaseId)
     
-    progressStatus.value = 'success'
-    ElMessage.success(res.data.message)
-    emit('uploaded')
-    
-    setTimeout(() => {
-      uploadRef.value?.clearFiles()
-      currentFile.value = null
-    }, 1000)
+    if (res.data.success) {
+      progressStatus.value = 'success'
+      taskId.value = res.data.file_id
+      taskStatus.value = 'processing'
+      ElMessage.success(res.data.message)
+      setTimeout(checkTaskStatus, 1000)
+    }
   } catch (error) {
     progressStatus.value = 'exception'
     ElMessage.error(error.response?.data?.detail || '上传失败')
@@ -116,5 +179,9 @@ const handleError = () => {
   font-size: 40px;
   color: #409eff;
   margin-bottom: 10px;
+}
+
+.task-status {
+  margin-top: 15px;
 }
 </style>

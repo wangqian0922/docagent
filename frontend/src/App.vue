@@ -2,30 +2,43 @@
   <div class="app-container">
     <header class="app-header">
       <h1>DocAgent</h1>
-      <p>智能文档问答助手</p>
+      <p>智能文档问答助手 v2.0</p>
     </header>
     
     <main class="app-main">
       <div class="sidebar">
-        <FileUpload @uploaded="onDocumentUploaded" />
-        <DocumentList ref="docListRef" @deleted="onDocumentDeleted" />
+        <KnowledgeBaseManager @change="onKbChange" />
+        <FileUpload 
+          :knowledgeBaseId="currentKb" 
+          @uploaded="onDocumentUploaded" 
+        />
+        <DocumentList 
+          ref="docListRef" 
+          :knowledgeBaseId="currentKb" 
+          @deleted="onDocumentDeleted" 
+        />
       </div>
       
       <div class="chat-area">
-        <ChatWindow />
+        <ChatWindow :knowledgeBaseId="currentKb" />
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
+import KnowledgeBaseManager from './components/KnowledgeBaseManager.vue'
 import FileUpload from './components/FileUpload.vue'
 import DocumentList from './components/DocumentList.vue'
 import ChatWindow from './components/ChatWindow.vue'
-import axios from 'axios'
 
 const docListRef = ref(null)
+const currentKb = ref('default')
+
+const onKbChange = (kbId) => {
+  currentKb.value = kbId
+}
 
 const onDocumentUploaded = () => {
   docListRef.value?.fetchDocuments()
@@ -33,9 +46,6 @@ const onDocumentUploaded = () => {
 
 const onDocumentDeleted = () => {
 }
-
-onMounted(() => {
-})
 </script>
 
 <style>
@@ -84,10 +94,10 @@ body {
 }
 
 .sidebar {
-  width: 280px;
+  width: 320px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
 }
 
 .chat-area {

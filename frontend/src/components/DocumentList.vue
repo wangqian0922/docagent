@@ -37,10 +37,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Document, Delete, Refresh } from '@element-plus/icons-vue'
 import { getDocuments, deleteDocument } from '../api'
+
+const props = defineProps({
+  knowledgeBaseId: {
+    type: String,
+    default: 'default'
+  }
+})
 
 const emit = defineEmits(['deleted'])
 
@@ -48,7 +55,7 @@ const documents = ref([])
 
 const fetchDocuments = async () => {
   try {
-    const res = await getDocuments()
+    const res = await getDocuments(props.knowledgeBaseId)
     documents.value = res.data.documents || []
   } catch (e) {
     console.error(e)
@@ -63,7 +70,7 @@ const handleDelete = async (fileId) => {
       type: 'warning'
     })
     
-    const res = await deleteDocument(fileId)
+    const res = await deleteDocument(fileId, props.knowledgeBaseId)
     if (res.data.success) {
       ElMessage.success('删除成功')
       fetchDocuments()
@@ -75,6 +82,10 @@ const handleDelete = async (fileId) => {
     }
   }
 }
+
+watch(() => props.knowledgeBaseId, () => {
+  fetchDocuments()
+})
 
 defineExpose({ fetchDocuments })
 
